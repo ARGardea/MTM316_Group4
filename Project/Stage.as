@@ -39,10 +39,13 @@
 			DrawBasicShapeOnStage();
 		}
 
+
 		function DrawBasicShape(_x: int, _y: int, _width: int, _height: int, _fill: int) : Sprite {
 			BasicShape = new Sprite();
 			
 			BasicShape.graphics.clear();
+			
+			
 			BasicShape.graphics.beginFill(_fill);
 			
 			if (MasterMC.currentFrame == 2)
@@ -59,17 +62,21 @@
 			MouseTracker.x = MasterMC.mouseX;
 			MouseTracker.y = MasterMC.mouseY;			
 			
-			AddEvents();
+			AddDrawingEvents();
 			SetupPreviewShape();
 			addChild(MouseTracker);
 		}
 		
-		function AddEvents() {
+		function AddDrawingEvents() {
 			MasterMC.addEventListener(MouseEvent.MOUSE_MOVE, MoveMouseTracker);			
 			MasterMC.DrawingStage.addEventListener(MouseEvent.CLICK, DrawBasicShapeOnClick);
 			MasterMC.DrawingStage.addEventListener(MouseEvent.MOUSE_MOVE, UpdateXYTextField);
 			MasterMC.TextFieldBasicShapeFill.addEventListener(Event.CHANGE, UpdateShapePreview);
 		}
+		
+	/*	function RandomColor(): Number {
+			
+		}*/
 		
 		function RectangleToolButtonPressed() {
 			MasterMC.gotoAndStop(3);
@@ -175,7 +182,7 @@
 				MouseTracker.y = MasterMC.mouseY;
 		}
 		
-		function RemoveEvents() {
+		function RemoveDrawingEvents() {
 			MasterMC.DrawingStage.removeEventListener(MouseEvent.MOUSE_MOVE, UpdateXYTextField);
 			MasterMC.removeEventListener(MouseEvent.MOUSE_MOVE, MoveMouseTracker);
 
@@ -189,17 +196,17 @@
 			e.currentTarget.transform.colorTransform = ChangeColor;
 
 			if (e.currentTarget.name == "CircleTool") {
-				RemoveEvents();
+				RemoveDrawingEvents();
 				CircleToolButtonPressed();
 			}
 			else if (e.currentTarget.name == "RectangleTool") {
-				RemoveEvents();
+				RemoveDrawingEvents();
 				RectangleToolButtonPressed();
 				
 			}
 			else if (e.currentTarget.name == "SelectorTool") {
 				SelectorToolButtonPressed();
-				RemoveEvents();
+				RemoveDrawingEvents();
 			}
 		}
 		
