@@ -10,8 +10,8 @@
 		
 		public var target: MyShape;
 		
-		public var strokeColor:uint = 0xFFE6E6E6;
-		public var anchorColor:uint = 0xFFCFCFCF;
+		public var strokeColor:uint = 0x000000;
+		public var anchorColor:uint = 0x000000;
 		public var fillColor:uint = 0x00FFFFFF;
 		
 		public var box:Sprite;

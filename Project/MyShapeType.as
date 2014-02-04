@@ -3,12 +3,12 @@ package
 	public class MyShapeType{
 		
 		public var Value:int;
-		public static const SQUARE: MyShapeType = new MyShapeType();
-		public static const CIRCLE: MyShapeType = new MyShapeType();
+		public static const RECTANGLE: MyShapeType = new MyShapeType();
+		public static const ELLIPSE: MyShapeType = new MyShapeType();
 		
 		public static function InitTypes(){
-			SQUARE.Value = 0;
-			CIRCLE.Value = 1;
+			RECTANGLE.Value = 0;
+			ELLIPSE.Value = 1;
 		}
 	}
 }

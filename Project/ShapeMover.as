@@ -12,6 +12,7 @@
 		
 		public var selector: SpriteSelector;
 		public var shape: MyShape;
+		public var validSelection:Function;
 		
 		public function ShapeMover(theStage: MovieClip)
 		{
@@ -26,6 +27,12 @@
 				target = target.parent as MyShape;
 			}
 			return target;
+		}
+		
+		public function ClearSelection(){
+			if(selector != null){
+				selector.ClearSelection();
+			}
 		}
 		
 		public function ReleaseHandler(e: MouseEvent) {
@@ -45,14 +52,18 @@
 			selector.target.x = theStage.mouseX + selector.target.xOffset;
 			selector.target.y = theStage.mouseY + selector.target.yOffset;
 			
-			trace(selector.target.x + " - x offset: " + selector.target.xOffset);
-			trace(selector.target.y + " - y offset: " + selector.target.yOffset);
-			
 			selector.TrackTarget();
 		}
 		
-		public function ShapeClickHandler(e: MouseEvent) {
-			if (e.target != theStage.stage) {
+		public function SelectShape(target: MyShape){
+			selector.ClearSelection();
+			selector = new SpriteSelector(target);
+			
+			theStage.addChild(selector);
+		}
+		
+		public function ShapeClickHandler(e: MouseEvent){
+			if (e.target != theStage) {
 				if(e.target as MyShape != null){
 					target = CycleSelection(e.target as MyShape);
 					var target: MyShape = e.target as MyShape;
@@ -70,7 +81,7 @@
 						
 						theStage.addChild(selector);
 					}
-					
+					validSelection(target);
 					theStage.addEventListener(MouseEvent.MOUSE_MOVE, MouseMoveHandler);
 					theStage.addEventListener(MouseEvent.MOUSE_UP, ReleaseHandler);
 				}else{

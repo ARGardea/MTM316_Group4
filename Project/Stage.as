@@ -1,9 +1,11 @@
 ﻿package {
 	import flash.display.MovieClip;
-	import flash.events.*;
-	import fl.motion.MotionEvent;
 	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.geom.ColorTransform;
+	
+	import fl.motion.MotionEvent;
 
 	public class Stage extends MovieClip {
 		var MasterMC: MovieClip;
@@ -13,46 +15,116 @@
 		var Tools: Array;
 		var ToolIcons: Array;
 		var ChangeColor: ColorTransform;
-		var BasicShape: Sprite;
+		var BasicShape: MyShape;
 		var MouseTracker: Sprite;
-		var shape: Sprite;
+		var shape: MyShape;
+		
+		var shapeMover: ShapeMover;
 		
 		public function Stage() {
 			MasterMC = new Master_MC();
 			ChangeColor = new ColorTransform();
 			MasterMC.x = 0;
 			MasterMC.y = 0;
+			
+			MyShapeType.InitTypes();
+			SpriteSelector.theStage = MasterMC.DrawingStage;
+			shapeMover = new ShapeMover(MasterMC.DrawingStage);
+			shapeMover.validSelection = SelectShape;
 
 			SetupButtons();
 			SetupTools();
 
 			MasterMC.DrawingStage.addEventListener(MouseEvent.MOUSE_MOVE, MouseOverStage);
 			MasterMC.DrawingStage.addEventListener(MouseEvent.MOUSE_OUT, MouseOutOfStage);
+			MasterMC.addEventListener(MouseEvent.CLICK, testTargets);
 			MasterMC.gotoAndStop(1);
 
 			addChild(MasterMC);
 		}
 		
+		function testTargets(e:MouseEvent){
+			trace("Target: " + e.target);
+			trace("CurrentTarget: " + e.currentTarget);
+			if(e.target == MasterMC.DrawingStage){
+				trace("Drawn On Stage");
+			}
+		}
+		
+		function SelectShape(target: MyShape){
+			if(target.shapeType == MyShapeType.ELLIPSE){
+				MasterMC.gotoAndStop(2);
+			}else if(target.shapeType == MyShapeType.RECTANGLE){
+				MasterMC.gotoAndStop(3);
+			}
+			MasterMC.TextFieldBasicShapeY.text = target.y;
+			MasterMC.TextFieldBasicShapeX.text = target.x;
+			MasterMC.TextFieldBasicShapeWidth.text = target.width;
+			MasterMC.TextFieldBasicShapeHeight.text = target.height;
+			MasterMC.TextFieldBasicShapeFill.addEventListener(Event.CHANGE, UpdateShapePreview);
+			MasterMC.TextFieldBasicShapeWidth.addEventListener(Event.CHANGE, UpdateShapeDimensions);
+			MasterMC.TextFieldBasicShapeHeight.addEventListener(Event.CHANGE, UpdateShapeDimensions);
+			MasterMC.TextFieldBasicShapeX.addEventListener(Event.CHANGE, UpdateShapePosition);
+			MasterMC.TextFieldBasicShapeY.addEventListener(Event.CHANGE, UpdateShapePosition);
+			
+			MasterMC.TextFieldBasicShapeFill.text = target.color as uint;
+		}
+		
+		function UpdateShapeDimensions(e:Event){
+			if(shapeMover.selector.target != null){
+				shapeMover.selector.target.width = MasterMC.TextFieldBasicShapeWidth.text;
+				shapeMover.selector.target.height = MasterMC.TextFieldBasicShapeHeight.text;
+				
+				var tempShape: MyShape = shapeMover.selector.target;
+				shapeMover.SelectShape(tempShape);
+			}
+		}
+		
+		function UpdateShapePosition(e:Event){
+			
+			if(shapeMover.selector.target != null){
+				shapeMover.selector.target.x = MasterMC.TextFieldBasicShapeX.text;
+				shapeMover.selector.target.y = MasterMC.TextFieldBasicShapeY.text;
+				
+				shapeMover.selector.TrackTarget();
+			}
+		}
+		
+		function DeSelect(){
+			if(shapeMover.selector != null){
+				shapeMover.selector.ClearSelection();
+			}
+			MasterMC.TextFieldBasicShapeFill.removeEventListener(Event.CHANGE, UpdateShapePreview);
+			MasterMC.TextFieldBasicShapeWidth.removeEventListener(Event.CHANGE, UpdateShapeDimensions);
+			MasterMC.TextFieldBasicShapeHeight.removeEventListener(Event.CHANGE, UpdateShapeDimensions);
+			MasterMC.TextFieldBasicShapeX.removeEventListener(Event.CHANGE, UpdateShapePosition);
+			MasterMC.TextFieldBasicShapeY.removeEventListener(Event.CHANGE, UpdateShapePosition);
+		}
+		
 		function CircleToolButtonPressed() {
 			MasterMC.gotoAndStop(2);
 			MouseTracker = DrawBasicShape(18, 18, 10, 10, 0x000000);
+			MasterMC.DrawingStage.removeEventListener(MouseEvent.MOUSE_DOWN, shapeMover.ShapeClickHandler);
+			DeSelect();
 			DrawBasicShapeOnStage();
 		}
 
-
-		function DrawBasicShape(_x: int, _y: int, _width: int, _height: int, _fill: int) : Sprite {
-			BasicShape = new Sprite();
+		function DrawBasicShape(_x: int, _y: int, _width: int, _height: int, _fill: int) : MyShape {
+			BasicShape = new MyShape();
 			
 			BasicShape.graphics.clear();
 			
+			BasicShape.x = _x;
+			BasicShape.y = _y;
 			
-			BasicShape.graphics.beginFill(_fill);
+			BasicShape.BeginColor(_fill);
 			
-			if (MasterMC.currentFrame == 2)
-				BasicShape.graphics.drawEllipse(_x, _y, _width, _height);
-			else if (MasterMC.currentFrame == 3)
-				BasicShape.graphics.drawRect(_x, _y, _width, _height);
-			
+			if (MasterMC.currentFrame == 2){
+				BasicShape.graphics.drawEllipse(0, 0, _width, _height);
+				BasicShape.shapeType = MyShapeType.ELLIPSE;}
+			else if (MasterMC.currentFrame == 3){
+				BasicShape.graphics.drawRect(0, 0, _width, _height);
+				BasicShape.shapeType = MyShapeType.RECTANGLE;}
 			BasicShape.graphics.endFill();
 			
 			return BasicShape;
@@ -82,11 +154,16 @@
 			MasterMC.gotoAndStop(3);
 			
 			MouseTracker = DrawBasicShape(17, 17, 9, 9, 0x000000);
+			MasterMC.DrawingStage.removeEventListener(MouseEvent.MOUSE_DOWN, shapeMover.ShapeClickHandler);
+			DeSelect();
 			DrawBasicShapeOnStage();
 		}
 		
 		function SelectorToolButtonPressed() {
 			MasterMC.gotoAndStop(1);
+			
+			RemoveDrawingEvents();
+			MasterMC.DrawingStage.addEventListener(MouseEvent.MOUSE_DOWN, shapeMover.ShapeClickHandler);
 		}
 		
 		function SetupButtons() {
@@ -154,10 +231,13 @@
 		
 		function UpdateShapePreview(e: Event) {
 			SetupPreviewShape();
+			if(shapeMover.selector.target != null){
+				shapeMover.selector.target.ChangeColor(MasterMC.TextFieldBasicShapeFill.text);
+			}
 		}
 
 		function DrawBasicShapeOnClick(e: MouseEvent) {
-			var shape: Sprite = DrawBasicShape(MasterMC.MouseX.text, MasterMC.MouseY.text, MasterMC.TextFieldBasicShapeWidth.text, MasterMC.TextFieldBasicShapeHeight.text, MasterMC.TextFieldBasicShapeFill.text);
+			var shape: MyShape = DrawBasicShape(MasterMC.MouseX.text, MasterMC.MouseY.text, MasterMC.TextFieldBasicShapeWidth.text, MasterMC.TextFieldBasicShapeHeight.text, MasterMC.TextFieldBasicShapeFill.text);
 			MasterMC.DrawingStage.addChild(shape);
 		}
 
