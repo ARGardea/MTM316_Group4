@@ -6,6 +6,7 @@
 	import flash.geom.ColorTransform;
 	
 	import fl.motion.MotionEvent;
+	import flash.text.engine.TextBaseline;
 
 	public class Stage extends MovieClip {
 		var MasterMC: MovieClip;
@@ -18,6 +19,8 @@
 		var BasicShape: MyShape;
 		var MouseTracker: Sprite;
 		var shape: MyShape;
+		
+		var ourTextBox: TextBoxes;
 		
 		var shapeMover: ShapeMover;
 		
@@ -124,10 +127,17 @@
 				BasicShape.shapeType = MyShapeType.ELLIPSE;}
 			else if (MasterMC.currentFrame == 3){
 				BasicShape.graphics.drawRect(0, 0, _width, _height);
-				BasicShape.shapeType = MyShapeType.RECTANGLE;}
+				BasicShape.shapeType = MyShapeType.RECTANGLE;
+				}
 			BasicShape.graphics.endFill();
 			
 			return BasicShape;
+		}
+		
+		function DrawTextBox(_x: int, _y: int, _width: int, _height: int) : TextBoxes {
+			trace("I should be able to see this");
+			trace("X: " + _x + ", Y: " + _y + ", Width: " + _width + ", Height: " + _height);
+			return new TextBoxes(_x, _y, _width, _height);
 		}
 		
 		function DrawBasicShapeOnStage() {
@@ -164,6 +174,13 @@
 			
 			RemoveDrawingEvents();
 			MasterMC.DrawingStage.addEventListener(MouseEvent.MOUSE_DOWN, shapeMover.ShapeClickHandler);
+		}
+		
+		function TextToolButtonPressed() {
+			MasterMC.gotoAndStop(5);
+			
+			MouseTracker = DrawTextBox(16, 16, 8, 8);
+			DrawBasicShapeOnStage();
 		}
 		
 		function SetupButtons() {
@@ -237,8 +254,16 @@
 		}
 
 		function DrawBasicShapeOnClick(e: MouseEvent) {
-			var shape: MyShape = DrawBasicShape(MasterMC.MouseX.text, MasterMC.MouseY.text, MasterMC.TextFieldBasicShapeWidth.text, MasterMC.TextFieldBasicShapeHeight.text, MasterMC.TextFieldBasicShapeFill.text);
-			MasterMC.DrawingStage.addChild(shape);
+			if(MasterMC.currentFrame == 5)
+			{
+				ourTextBox = DrawTextBox(MasterMC.MouseX.text, MasterMC.MouseY.text, MasterMC.TextFieldBasicShapeWidth.text, MasterMC.TextFieldBasicShapeHeight.text);
+				MasterMC.DrawingStage.addChild(ourTextBox);
+			}
+			else
+			{
+				var shape: Sprite = DrawBasicShape(MasterMC.MouseX.text, MasterMC.MouseY.text, MasterMC.TextFieldBasicShapeWidth.text, MasterMC.TextFieldBasicShapeHeight.text, MasterMC.TextFieldBasicShapeFill.text);
+				MasterMC.DrawingStage.addChild(shape);
+			}
 		}
 
 		function MouseOutOfStage(e: MouseEvent) {
@@ -287,6 +312,10 @@
 			else if (e.currentTarget.name == "SelectorTool") {
 				SelectorToolButtonPressed();
 				RemoveDrawingEvents();
+			}
+			else if (e.currentTarget.name == "TextTool") {
+				RemoveDrawingEvents();				
+				TextToolButtonPressed();
 			}
 		}
 		
